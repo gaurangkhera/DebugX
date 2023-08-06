@@ -6,6 +6,7 @@ import RegisterPage from "./pages/RegisterPage";
 import Nav from "./components/Nav";
 import CataloguePage from "./pages/CataloguePage";
 import ProductComponent from "./components/ProductComponent";
+import CartPage from "./pages/CartPage";
 
 const Router = () => {
   return (
@@ -18,6 +19,7 @@ const Router = () => {
         <Route path="/register" exact component={RegisterPage} />
         <Route path="/catalogue" exact component={CataloguePage} />
         <Route path="/catalogue/:productId" component={ProductComponent} />
+        <Route path='/cart' component={CartPage} />
         <Route component={NotFound} />
       </Switch>
     </BrowserRouter>

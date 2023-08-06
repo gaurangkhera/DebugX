@@ -54,5 +54,4 @@ class Product(db.Model):
             "category": self.category,
             "name": self.name,
             "price": self.price,
-            "cart_products": self.cart_products
         }

@@ -8,6 +8,7 @@ import { api } from '../config';
 const ProductComponent:React.FC = () => {
 
   const { productId } = useParams<{ productId: string }>();
+  const [buttonText, setButtonText] = useState<string | null>('Add to cart')
   const [product, setProduct] = useState<Product | null>(null);
 
   useEffect(() => {
@@ -20,6 +21,24 @@ const ProductComponent:React.FC = () => {
       }
     })();
   }, []);
+
+  const addToCart = async() => {
+    try{
+      const resp = await httpClient.post(`${api}/addtocart/${productId}`);
+      setButtonText('Remove from cart')
+    } catch(error : any){
+      console.log('error while adding to cart.')
+    }
+  }
+
+  const removeFromCart = async() => {
+    try{
+      const resp = await httpClient.post(`${api}/removefromcart/${productId}`);
+      setButtonText('Add to cart')
+    } catch(error : any){
+      console.log('error while removing from cart.')
+    }
+  }
   return (
     <div className="bg-white py-6 sm:py-8 lg:py-12">
   <div className="mx-auto max-w-screen-lg px-4 md:px-8">
@@ -81,12 +100,12 @@ const ProductComponent:React.FC = () => {
         {/* shipping notice - end */}
         {/* buttons - start */}
         <div className="flex gap-2.5">
-          <a
-            href="#"
-            className="inline-block flex-1 rounded bg-black px-8 py-3 text-center text-sm font-semibold text-white outline-none transition duration-100 hover:bg-gray-600 focus-visible:ring sm:flex-none md:text-base"
+          <button
+            onClick={buttonText == 'Remove from cart' ? removeFromCart : addToCart}
+            className={`inline-block flex-1 rounded ${buttonText == "Add to cart" ? 'bg-black hover:bg-gray-700': 'bg-red-400 hover:bg-red-500'} px-8 py-3 text-center text-sm font-semibold text-white outline-none transition duration-100 focus-visible:ring sm:flex-none md:text-base`}
           >
-            Add to cart
-          </a>
+            {buttonText}
+          </button>
           <a
             href="#"
             className="inline-block rounded-lg bg-gray-200 px-4 py-3 text-center text-sm font-semibold text-gray-500 outline-none ring-indigo-300 transition duration-100 hover:bg-gray-300 focus-visible:ring active:text-gray-700 md:text-base"

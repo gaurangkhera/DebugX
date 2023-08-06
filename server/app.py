@@ -1,10 +1,11 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, url_for
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS, cross_origin
 from flask_session import Session
 import json
 from models import db, User, Product, CartProduct
 import os
+import stripe
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -13,12 +14,16 @@ app.config["SESSION_COOKIE_SAMESITE"] = "None"
 app.config["SESSION_COOKIE_SECURE"] = True
 app.config['SECRET_KEY'] = 'super secret key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['STRIPE_PUBLIC_KEY'] = 'pk_test_51NTgT6SAvDl2UTdKhZ5BOMiSCEJ5zQ8Gd0aiOcjIqWAG8wiMHOoSgW1U0ykaPgob27lDECWRW7H6GW9JacjjmSsJ00Iy6SDvkv'
+app.config['STRIPE_SECRET_KEY'] = 'sk_test_51NTgT6SAvDl2UTdKQM3LUyirhm3n4DQbWtLhY8b4QX6vajOaBgFcNP2TGMLcvjyu1RSH7Z3NR7T1k7GTucNe52aN0069n7nZh2'
+
+stripe.api_key = app.config['STRIPE_SECRET_KEY']
 
 sess = Session()
 sess.init_app(app=app)
 
 bcrypt = Bcrypt(app)
-CORS(app, origins=['*'], supports_credentials=True)
+CORS(app, supports_credentials=True)
 db.init_app(app)
 
 with app.app_context():
@@ -51,6 +56,63 @@ def register_user():
     session["user_id"] = new_user.id
     print(session.get('user_id'))
     return jsonify({ "id": new_user.id, "email": new_user.email })
+
+@app.route('/cart')
+def cart():
+    if session.get('user_id') is None:
+        return "403"
+    user = User.query.filter_by(id=session.get('user_id')).first()
+    products = [Product.query.filter_by(id=product.product).first().return_json() for product in user.cart_products]
+    return jsonify(products)
+
+@app.route('/stripe_pay', methods=['GET', 'POST'])
+def stripe_pay():
+    session = stripe.checkout.Session.create(
+        payment_method_types=['card'],
+        line_items=[{
+            'price': 'price_1NTgYsSAvDl2UTdKUmRdLnFD',
+            'quantity': 1,
+        }],
+        mode='payment',
+        success_url="http://localhost:3000/catalogue",
+        cancel_url="http://localhost:3000/"
+    )
+    return {
+        'checkout_session_id': session['id'],
+        'checkout_public_key': app.config['STRIPE_PUBLIC_KEY']
+    }
+
+@app.route('/success')
+def success():
+    return "thanks for buy"
+
+@app.route('/cancel')
+def cancel():
+    return "why cancel bruv"
+
+@app.route('/addtocart/<id>', methods=['GET', 'POST'])
+def addtocart(id):
+    if session.get('user_id') is None:
+        return "403"
+    user = User.query.filter_by(id=session.get('user_id')).first()
+    product = Product.query.filter_by(id=id).first()
+    cartProduct = CartProduct(product=product.id, qty=1, user=user.id)
+    db.session.add(cartProduct)
+    db.session.commit()
+    print('added')
+    return "200"
+
+@app.route('/removefromcart/<id>', methods=['GET', 'POST'])
+def removefromcart(id):
+    if session.get('user_id') is None:
+        return "403"
+    user = User.query.filter_by(id=session.get('user_id')).first()
+    product = Product.query.filter_by(id=id).first()
+    cartProduct = CartProduct.query.filter_by(user=user.id, product=product.id).first()
+    db.session.delete(cartProduct)
+    db.session.commit()
+    print('removed')
+    return "200"
 
 @app.route("/login", methods=["POST"])
 def login_user():

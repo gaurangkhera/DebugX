@@ -42,8 +42,8 @@ const Nav = () => {
         </Link>
       </li>
       <li className="p-3 xl:p-6">
-        <Link to="/about">
-          <span>About</span>
+        <Link to="/cart">
+          <span>Cart</span>
         </Link>
       </li>
     </ul>
