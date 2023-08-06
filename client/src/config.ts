@@ -1,3 +1,3 @@
-const api = 'https://nimbus-s2wn.onrender.com/';
+const api = 'https://nimbus-zj4w.onrender.com';
 
 export { api };
