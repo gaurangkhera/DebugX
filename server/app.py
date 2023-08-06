@@ -90,6 +90,7 @@ def login_user():
         return jsonify({"error": "Unauthorized"}), 403
     
     session["user_id"] = user.id
+    print(session['user_id'])
 
     return jsonify({
         "id": user.id,
