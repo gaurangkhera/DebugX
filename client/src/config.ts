@@ -1,3 +1,3 @@
-const api = '//localhost:5000';
+const api = 'https://nimbus-s2wn.onrender.com/';
 
 export { api };
