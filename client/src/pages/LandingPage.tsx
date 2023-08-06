@@ -13,12 +13,12 @@ const LandingPage: React.FC = () => {
         <div className="relative px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 gap-y-4 lg:items-center lg:grid-cols-2 xl:grid-cols-2">
                 <div className="text-center xl:col-span-1 lg:text-left md:px-16 lg:px-0 xl:pr-20">
-                    <h1 className="text-4xl font-bold leading-tight text-gray-900 sm:text-5xl sm:leading-tight lg:text-6xl lg:leading-tight font-pj">Debug your code, without spending hours.</h1>
-                    <p className="mt-2 text-lg text-gray-600 sm:mt-6 font-inter">Ever spent hours on finding a bug? Only to realise it was due to a silly mistake? Avoid that today with DebugX.</p>
+                    <h1 className="text-4xl font-bold leading-tight text-gray-900 sm:text-5xl sm:leading-tight lg:text-6xl lg:leading-tight font-pj">Hi, we're Nimbus.</h1>
+                    <p className="mt-2 text-lg text-gray-600 sm:mt-6 font-inter">One of the best e-commerce platforms, providing features such as same-day shipping, discounts & more.</p>
 
-                    <a href="#" title="" className="inline-flex px-8 py-4 mt-8 text-lg font-bold text-white transition-all duration-200 bg-gray-900 border border-transparent rounded sm:mt-10 font-pj hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900" role="button">
-                        Try our free editor
-                    </a>
+                    <Link to="/register" title="" className="inline-flex px-8 py-2 mt-8 text-lg font-medium text-white transition-all duration-200 bg-gray-900 border border-transparent rounded-full sm:mt-10 font-pj hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900" role="button">
+                        Get Started
+                    </Link>
                 </div>
 
                 <div className="xl:col-span-1">
