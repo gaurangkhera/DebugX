@@ -1,3 +1,3 @@
-const api = '//localhost:5000';
+const api = 'https://nimbusecommerce.pythonanywhere.com';
 
 export { api };
