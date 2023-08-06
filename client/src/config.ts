@@ -1,3 +1,3 @@
-const api = 'https://nimbus-zj4w.onrender.com';
+const api = 'https://nimbusecommerce.pythonanywhere.com/';
 
 export { api };
