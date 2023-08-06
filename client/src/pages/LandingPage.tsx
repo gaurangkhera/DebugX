@@ -16,7 +16,7 @@ const LandingPage: React.FC = () => {
                     <h1 className="text-4xl font-bold leading-tight text-gray-900 sm:text-5xl sm:leading-tight lg:text-6xl lg:leading-tight font-pj">Hi, we're Nimbus.</h1>
                     <p className="mt-2 text-lg text-gray-600 sm:mt-6 font-inter">One of the best e-commerce platforms, providing features such as same-day shipping, discounts & more.</p>
 
-                    <Link to="/register" title="" className="inline-flex px-8 py-2 mt-8 text-lg font-medium text-white transition-all duration-200 bg-gray-900 border border-transparent rounded-full sm:mt-10 font-pj hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900" role="button">
+                    <Link to="/register" title="" className="inline-flex px-8 py-2 mt-8 text-lg font-medium text-white transition-all duration-200 bg-black border border-transparent rounded sm:mt-10 font-pj hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900" role="button">
                         Get Started
                     </Link>
                 </div>
