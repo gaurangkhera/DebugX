@@ -15,7 +15,7 @@ const Nav = () => {
     useEffect(() => {
       (async () => {
         try {
-          const resp = await httpClient.get(`//${api}/@me`);
+          const resp = await httpClient.get(`${api}/@me`);
           setUser(resp.data);
         } catch (error) {
           console.log("Not authenticated");
