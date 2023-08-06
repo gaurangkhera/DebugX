@@ -22,15 +22,6 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-@app.route("/@me")
-def get_current_user():
-    user_id = session.get("user_id")
-    print(user_id)
-    if not user_id:
-        return jsonify({"error": "User Id is Null!"}), 401
-    user = User.query.filter_by(id=user_id).first()
-    return jsonify({ "id": user.id, "username": user.username, "email": user.email })
-
 @app.route('/product/<id>', methods=['GET', 'POST'])
 def return_product(id):
     return Product.query.filter_by(id=id).first().return_json()
@@ -76,6 +67,15 @@ def login_user():
 def logout_user():
     session.pop("user_id", None)
     return "200"
+
+@app.route("/@me")
+def get_current_user():
+    user_id = session.get("user_id")
+    print(user_id)
+    if not user_id:
+        return jsonify({"error": "User Id is Null!"}), 401
+    user = User.query.filter_by(id=user_id).first()
+    return jsonify({ "id": user.id, "username": user.username, "email": user.email })
 
 if __name__ == "__main__":
     app.run(debug=True)
