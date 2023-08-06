@@ -16,7 +16,7 @@ sess = Session()
 sess.init_app(app=app)
 
 bcrypt = Bcrypt(app)
-CORS(app)
+CORS(app, origins=['*'], supports_credentials=True)
 db.init_app(app)
 
 with app.app_context():
