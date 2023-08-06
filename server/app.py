@@ -68,7 +68,7 @@ def logout_user():
     session.pop("user_id", None)
     return "200"
 
-@app.route("/@me")
+@app.route("/@me", methods=['GET', 'POST'])
 def get_current_user():
     user_id = session.get("user_id")
     print(user_id)
