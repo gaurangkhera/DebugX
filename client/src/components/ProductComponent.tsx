@@ -39,6 +39,31 @@ const ProductComponent:React.FC = () => {
       console.log('error while removing from cart.')
     }
   }
+
+  useEffect(() => {
+    // Define an async function to use with useEffect
+    const checkCart = async () => {
+      try {
+        const resp = await httpClient.get(`${api}/checkcart/${productId}`);
+        const { in_cart } = resp.data;
+  
+        // Update the button text based on cart status
+        if (in_cart) {
+          setButtonText('Remove from cart');
+        } else {
+          setButtonText('Add to cart');
+        }
+      } catch (error) {
+        console.log('Error while checking if the product is in the cart.');
+        setButtonText('Add to cart'); // Set the button text to default if there is an error
+      }
+    };
+  
+    // Call the checkCart function
+    checkCart();
+  }, []);
+  
+  
   return (
     <div className="bg-white py-6 sm:py-8 lg:py-12">
   <div className="mx-auto max-w-screen-lg px-4 md:px-8">

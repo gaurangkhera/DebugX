@@ -2,19 +2,45 @@ import React, { useState, useEffect } from 'react';
 import httpClient from '../httpClient';
 import { Product } from '../types';
 import { api } from '../config';
+import { User } from '../types';
 
 interface Window {
     Stripe?: any;
   }
 
 const CartPage = () => {
+  const [user, setUser] = useState<User | null>(null);
   const [cart, setCart] = useState<Product[]>([]);
   const [total, setTotal] = useState<number>(0);
 
 
-  const calculateTotalPrice = () => {
-    return cart.reduce((total, product) => total + product.price, 0);
-  };
+  // const calculateTotalPrice = () => {
+  //   return cart.reduce((total, product) => total + product.price, 0);
+  // };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const resp = await httpClient.get(`${api}/@me`);
+        setUser(resp.data);
+      } catch (error) {
+        console.log("Not authenticated");
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    const fetchTotal = async () => {
+      try{
+        const resp = await httpClient.get(`${api}/calctotal/${user?.id}`)
+        setTotal(resp.data)
+      } catch{
+        console.log('err while fetching total')
+      }
+    }
+    
+    fetchTotal();
+  }, [cart])
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -29,12 +55,12 @@ const CartPage = () => {
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    setTotal(calculateTotalPrice());
-  }, [cart]);
+  // useEffect(() => {
+  //   setTotal(calculateTotalPrice());
+  // }, [cart]);
 
   const buyProduct = async () => {
-    fetch(`${api}/stripe_pay`)
+    fetch(`${api}/stripe_pay/${user?.id}`)
       .then((result) => result.json())
       .then((data) => {
         var stripe = (window as any).Stripe(data.checkout_public_key);
@@ -153,7 +179,7 @@ const CartPage = () => {
                 <span className="text-lg font-bold">Total</span>
                 <span className="flex flex-col items-end">
                   <span className="text-lg font-bold">
-                    ${total} USD
+                    ${total}
                   </span>
                   <span className="text-sm text-gray-500">including VAT</span>
                 </span>

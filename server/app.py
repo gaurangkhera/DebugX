@@ -11,12 +11,11 @@ app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config["SESSION_COOKIE_SAMESITE"] = "None"
-app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_SECURE"] = False
 app.config['SECRET_KEY'] = 'super secret key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['STRIPE_PUBLIC_KEY'] = 'pk_test_51NTgT6SAvDl2UTdKhZ5BOMiSCEJ5zQ8Gd0aiOcjIqWAG8wiMHOoSgW1U0ykaPgob27lDECWRW7H6GW9JacjjmSsJ00Iy6SDvkv'
 app.config['STRIPE_SECRET_KEY'] = 'sk_test_51NTgT6SAvDl2UTdKQM3LUyirhm3n4DQbWtLhY8b4QX6vajOaBgFcNP2TGMLcvjyu1RSH7Z3NR7T1k7GTucNe52aN0069n7nZh2'
-
 stripe.api_key = app.config['STRIPE_SECRET_KEY']
 
 sess = Session()
@@ -28,6 +27,15 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+@app.route('/checkcart/<id>', methods=['GET', 'POST'])
+def check_cart(id):
+    cproduct = CartProduct.query.filter_by(user=session['user_id'], product=id).first()
+    print(cproduct)
+    if cproduct != None:
+        print('match found! /s')
+        return jsonify({'in_cart': True})
+    return jsonify({'in_cart': False})
 
 @app.route('/product/<id>', methods=['GET', 'POST'])
 def return_product(id):
@@ -54,33 +62,96 @@ def register_user():
     db.session.add(new_user)
     db.session.commit()
     session["user_id"] = new_user.id
-    print(session.get('user_id'))
+    # print(session.get('user_id'))
     return jsonify({ "id": new_user.id, "email": new_user.email })
 
 @app.route('/cart')
 def cart():
+    # print(session.get('user_id'))
     if session.get('user_id') is None:
         return "403"
     user = User.query.filter_by(id=session.get('user_id')).first()
     products = [Product.query.filter_by(id=product.product).first().return_json() for product in user.cart_products]
     return jsonify(products)
 
-@app.route('/stripe_pay', methods=['GET', 'POST'])
-def stripe_pay():
-    session = stripe.checkout.Session.create(
+@app.route('/stripe_pay/<id>', methods=['GET', 'POST'])
+def stripe_pay(id):
+        # print(session)
+        current_user = User.query.filter_by(id=id).first()  # Replace '1' with the actual user ID
+
+        # Retrieve cart items and calculate the line items for Stripe Checkout
+        cart_items = current_user.cart_products
+        line_items = []
+
+        for cart_item in cart_items:
+            prod = Product.query.filter_by(id=cart_item.product).first()
+            print(prod.price)
+            line_item = {
+                'price_data': {
+                    'currency': 'usd',
+                    'unit_amount': int(prod.price) * 100,
+                    'product_data': {
+                        'name': prod.name,
+                    },
+                },
+                'quantity': 1,
+            }
+            line_items.append(line_item)
+
+        stripe_session = stripe.checkout.Session.create(
         payment_method_types=['card'],
-        line_items=[{
-            'price': 'price_1NTgYsSAvDl2UTdKUmRdLnFD',
-            'quantity': 1,
-        }],
+        line_items=line_items,
         mode='payment',
-        success_url="http://localhost:3000/catalogue",
-        cancel_url="http://localhost:3000/"
+        success_url='https://debug-x.vercel.app/thankyou',  # Replace with your success URL
+        cancel_url='https://debug-x.vercel.app/cart',    # Replace with your cancel URL
     )
-    return {
-        'checkout_session_id': session['id'],
-        'checkout_public_key': app.config['STRIPE_PUBLIC_KEY']
-    }
+
+        return {
+            'checkout_session_id': stripe_session['id'],
+            'checkout_public_key': app.config['STRIPE_PUBLIC_KEY']
+        }
+    
+# @app.route('/checkout', methods=['GET','POST'])
+# def create_checkout():
+        
+#     user_id = session.get('user_id')
+#     print(user_id)
+#     current_user = User.query.filter_by(id=user_id).first()
+
+#     if current_user is None:
+#         return jsonify(error="User not found"), 403
+
+#     cart_items = current_user.cart_products
+#     line_items = []
+
+#     for cart_item in cart_items:
+#         product_price = float(cart_item.product.price)
+#         line_item = {
+#             'price_data': {
+#                 'currency': 'usd',
+#                 'unit_amount': int(product_price * 100),
+#                 'product_data': {
+#                     'name': cart_item.product.name,
+#                 },
+#             },
+#             'quantity': cart_item.qty,
+#         }
+#         line_items.append(line_item)
+
+#     stripe_session = stripe.checkout.Session.create(
+#         payment_method_types=['card'],
+#         line_items=line_items,
+#         mode='payment',
+#         success_url='http://localhost:5000/success',  # Replace with your success URL
+#         cancel_url='http://localhost:5000/cancel',    # Replace with your cancel URL
+#     )
+
+#     return jsonify({
+#         'checkout_session_id': stripe_session['id'],
+#         'checkout_public_key': app.config['STRIPE_PUBLIC_KEY']
+#     })
+
+
 
 @app.route('/success')
 def success():
@@ -102,6 +173,16 @@ def addtocart(id):
     print('added')
     return "200"
 
+@app.route('/calctotal/<id>', methods=['GET','POST'])
+def calctotal(id):
+    print(id)
+    user = User.query.filter_by(id=id).first()
+    total = 0
+    for p in user.cart_products:
+        pr = Product.query.filter_by(id=p.product).first()
+        total += int(pr.price)
+    return jsonify(total)
+
 @app.route('/removefromcart/<id>', methods=['GET', 'POST'])
 def removefromcart(id):
     if session.get('user_id') is None:
@@ -112,7 +193,8 @@ def removefromcart(id):
     db.session.delete(cartProduct)
     db.session.commit()
     print('removed')
-    return "200"
+    cart = [Product.query.filter_by(id=product.product).first().return_json() for product in user.cart_products]
+    return jsonify(cart)
 
 @app.route("/login", methods=["POST"])
 def login_user():
@@ -124,7 +206,7 @@ def login_user():
     if not bcrypt.check_password_hash(user.password, password):
         return jsonify({"error": "Unauthorized"}), 403
     session["user_id"] = user.id
-    print(session.get('user_id'))
+    # print(session.get('user_id'))
     return jsonify({ "id": user.id, "email": user.email })
 
 @app.route("/logout", methods=["POST"])
@@ -135,7 +217,6 @@ def logout_user():
 @app.route("/@me", methods=['GET', 'POST'])
 def get_current_user():
     user_id = session.get("user_id")
-    print(user_id)
     if not user_id:
         return jsonify({"error": "User Id is Null!"}), 401
     user = User.query.filter_by(id=user_id).first()

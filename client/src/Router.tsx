@@ -10,7 +10,7 @@ import CartPage from "./pages/CartPage";
 
 const Router = () => {
   return (
-    <div className="font-poppins">
+    <div className="font-poppins cursor-default">
       <BrowserRouter>
     <Nav />
       <Switch>
